@@ -1,12 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:garasi_gitar/bottom_nav.dart';
+import 'package:garasi_gitar/models/cart_model.dart';
 import 'package:garasi_gitar/models/product_model.dart';
+import 'package:garasi_gitar/provider/cart_provider.dart';
 import 'package:garasi_gitar/provider/whislist_provider.dart';
-import 'package:garasi_gitar/service/cart_service.dart';
 import 'package:provider/provider.dart';
-import 'package:get/get.dart';
 
 class ProductPage extends StatelessWidget {
   final String name, ketagori, deskripsi, image, id;
@@ -24,24 +22,9 @@ class ProductPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    CartProvider cartProvider = Provider.of<CartProvider>(context);
     WishlistProvider wishlistProvider = Provider.of<WishlistProvider>(context);
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    CollectionReference carts = firestore.collection("cart");
-    User? user = FirebaseAuth.instance.currentUser;
-
-    Future<void> saveCartData(
-        List<Map<String, dynamic>> cartData, String userId) async {
-      final batch = FirebaseFirestore.instance.batch();
-      for (final item in cartData) {
-        final cartItemRef = FirebaseFirestore.instance
-            .collection('users')
-            .doc(userId)
-            .collection('cart')
-            .doc();
-        batch.set(cartItemRef, item);
-      }
-      await batch.commit();
-    }
 
     Widget header() {
       return Column(
@@ -135,6 +118,26 @@ class ProductPage extends StatelessWidget {
                           image: image,
                         ),
                       );
+                      final snackBar = SnackBar(
+                        content: Text(
+                          wishlistProvider.isWishlist(ProductModel(
+                            id: id,
+                            name: name,
+                            harga: harga,
+                            ketagori: ketagori,
+                            deskripsi: deskripsi,
+                            image: image,
+                          ))
+                              ? 'Product added to wishlist'
+                              : 'Product removed from wishlist',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 17,
+                          ),
+                        ),
+                        backgroundColor: Colors.white,
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
                     },
                     child: Icon(
                       Icons.favorite,
@@ -225,16 +228,28 @@ class ProductPage extends StatelessWidget {
                     child: Container(
                       height: 44,
                       child: TextButton(
-                        onPressed: () {
-                          createKeranjang(
-                            name: name,
-                            harga: harga,
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(
-                              "Berhasil Ditambah",
+                        onPressed: () async {
+                          cartProvider.addCart(
+                            ProductModel(
+                              id: id,
+                              name: name,
+                              harga: harga,
+                              ketagori: ketagori,
+                              deskripsi: deskripsi,
+                              image: image,
                             ),
-                          ));
+                          );
+                          final snackBar = SnackBar(
+                            content: Text(
+                              'Product added to cart',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 17,
+                              ),
+                            ),
+                            backgroundColor: Colors.white,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
                         },
                         style: TextButton.styleFrom(
                           shape: RoundedRectangleBorder(

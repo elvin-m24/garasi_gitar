@@ -1,7 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class EditProfilePage extends StatefulWidget {
   @override
@@ -9,25 +7,42 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  TextEditingController emailController = TextEditingController();
-  TextEditingController usernameController = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  var oldPassController = TextEditingController();
+  var newPassController = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
+  var auth = FirebaseAuth.instance;
+  var currentUser = FirebaseAuth.instance.currentUser;
 
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get()
-        .then((DocumentSnapshot documentSnapshot) {
-      if (documentSnapshot.exists) {
-        Map<String, dynamic> userData =
-            documentSnapshot.data() as Map<String, dynamic>;
-        emailController.text = userData['email'];
-        usernameController.text = userData['username'];
-      }
-    });
+  changePassword({email, oldPassword, newPassword, scaffoldKey}) async {
+    var cred = EmailAuthProvider.credential(
+      email: email,
+      password: oldPassword,
+    );
+
+    try {
+      await currentUser!.reauthenticateWithCredential(cred);
+      await currentUser!.updatePassword(newPassword);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Password Updated Successfully',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 17,
+            ),
+          ),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } catch (error) {
+      print(error.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error.toString()),
+        ),
+      );
+    }
   }
 
   @override
@@ -46,7 +61,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Edit Profile',
+          'Change Password',
         ),
         actions: [
           IconButton(
@@ -54,21 +69,20 @@ class _EditProfilePageState extends State<EditProfilePage> {
               Icons.check,
               color: Colors.orange,
             ),
-            onPressed: () {
-              FirebaseFirestore.instance
-                  .collection('users')
-                  .doc(FirebaseAuth.instance.currentUser!.uid)
-                  .update({
-                'email': emailController.text,
-                'username': usernameController.text,
-              }).then((value) => Navigator.of(context).pop());
+            onPressed: () async {
+              await changePassword(
+                email: currentUser?.email,
+                oldPassword: oldPassController.text,
+                newPassword: newPassController.text,
+                scaffoldKey: _scaffoldKey,
+              );
             },
           )
         ],
       );
     }
 
-    Widget usernameInput() {
+    Widget passLama() {
       return Container(
         margin: EdgeInsets.only(
           top: 30,
@@ -77,12 +91,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Username',
+              'Password Lama',
               style: TextStyle(
                 fontSize: 13,
               ),
             ),
             TextFormField(
+              controller: oldPassController,
+              obscureText: true,
               decoration: InputDecoration(
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
@@ -96,7 +112,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       );
     }
 
-    Widget emailInput() {
+    Widget passBaru() {
       return Container(
         margin: EdgeInsets.only(
           top: 30,
@@ -105,14 +121,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Email Address',
+              'Password Baru',
               style: TextStyle(
                 fontSize: 13,
               ),
             ),
             TextFormField(
+              controller: newPassController,
+              obscureText: true,
               decoration: InputDecoration(
-                hintText: '${user?.email}',
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(
                     color: Color(0xff504F5E),
@@ -146,8 +163,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     fit: BoxFit.fill, image: AssetImage("assets/kucing.jpg")),
               ),
             ),
-            usernameInput(),
-            emailInput(),
+            passLama(),
+            passBaru(),
           ],
         ),
       );

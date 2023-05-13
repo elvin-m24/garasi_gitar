@@ -1,92 +1,136 @@
 import 'package:flutter/material.dart';
+import 'package:garasi_gitar/models/cart_model.dart';
 import 'package:garasi_gitar/models/product_model.dart';
+import 'package:garasi_gitar/provider/cart_provider.dart';
 import 'package:garasi_gitar/provider/whislist_provider.dart';
 import 'package:provider/provider.dart';
 
 class CartCard extends StatelessWidget {
   const CartCard({
     Key? key,
-    required this.name,
-    required this.harga,
-    required this.ketagori,
-    required this.deskripsi,
-    required this.image,
-    required this.id,
+    required this.cart,
     required this.product,
+    required this.quantity,
+    required this.id,
   }) : super(key: key);
 
-  final String name, ketagori, deskripsi, image, id;
-  final num harga;
+  final int id;
+  final num quantity;
+  final CartModel cart;
   final ProductModel product;
 
   @override
   Widget build(BuildContext context) {
-    WishlistProvider wishlistProvider = Provider.of<WishlistProvider>(context);
-
-    ProductModel product = ProductModel(
-      id: id,
-      name: name,
-      ketagori: ketagori,
-      deskripsi: deskripsi,
-      harga: harga,
-      image: image,
-    );
+    CartProvider cartProvider = Provider.of<CartProvider>(context);
 
     return Container(
       margin: EdgeInsets.only(
-        top: 20,
+        top: 30,
       ),
-      padding: EdgeInsets.only(
-        top: 10,
-        left: 12,
-        bottom: 14,
-        right: 20,
+      padding: EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 10,
       ),
       decoration: BoxDecoration(
+        color: Colors.grey[200],
         borderRadius: BorderRadius.circular(12),
-        color: Colors.black,
       ),
-      child: Row(
+      child: Column(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              image,
-              width: 60,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  image: DecorationImage(
+                    image: NetworkImage(
+                      product.image,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: 12,
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      cart.product.name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      "Rp ${cart.product.harga}",
+                    ),
+                  ],
+                ),
+              ),
+              Column(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      cartProvider.addQuantity(cart.id);
+                    },
+                    child: Icon(
+                      Icons.add,
+                      size: 16,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 2,
+                  ),
+                  Text(
+                    "${cart.quantity.toString()}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 2,
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      cartProvider.reduceQuantity(cart.id);
+                    },
+                    child: Icon(
+                      Icons.minimize,
+                      size: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           SizedBox(
-            width: 12,
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  "Rp ${harga}",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
+            height: 12,
           ),
           GestureDetector(
             onTap: () {
-              wishlistProvider.setProduct(product);
+              cartProvider.removeCart(cart.id);
             },
-            child: Icon(
-              Icons.favorite,
-              color: Colors.orange,
+            child: Row(
+              children: [
+                Icon(
+                  Icons.remove,
+                  size: 10,
+                ),
+                SizedBox(
+                  width: 4,
+                ),
+                Text(
+                  'Remove',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

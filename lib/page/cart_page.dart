@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:garasi_gitar/bottom_nav.dart';
 import 'package:garasi_gitar/cart_tile.dart';
-import 'package:garasi_gitar/provider/whislist_provider.dart';
+import 'package:garasi_gitar/provider/cart_provider.dart';
 import 'package:provider/provider.dart';
 
 class CartPage extends StatelessWidget {
@@ -9,9 +10,8 @@ class CartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    CollectionReference cart = firestore.collection("cart");
-    WishlistProvider wishlistProvider = Provider.of<WishlistProvider>(context);
+    CartProvider cartProvider = Provider.of<CartProvider>(context);
+
     PreferredSizeWidget header() {
       return AppBar(
         backgroundColor: Colors.black,
@@ -96,18 +96,13 @@ class CartPage extends StatelessWidget {
         padding: EdgeInsets.symmetric(
           horizontal: 30,
         ),
-        children: wishlistProvider.wishlist
-            .map(
-              (product) => CartCard(
-                id: product.id,
-                name: product.name,
-                harga: product.harga,
-                ketagori: product.ketagori,
-                deskripsi: product.deskripsi,
-                image: product.image,
-                product: product,
-              ),
-            )
+        children: cartProvider.carts
+            .map((e) => CartCard(
+                  cart: e,
+                  id: e.id,
+                  product: e.product,
+                  quantity: e.quantity,
+                ))
             .toList(),
       );
     }
@@ -128,7 +123,7 @@ class CartPage extends StatelessWidget {
                     'Subtotal',
                   ),
                   Text(
-                    '\$?',
+                    'Rp ${cartProvider.totalPrice()}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -152,8 +147,20 @@ class CartPage extends StatelessWidget {
                 horizontal: 30,
               ),
               child: TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/checkout');
+                onPressed: () async {
+                  cartProvider.carts.asMap().forEach((index, cart) async {
+                    await FirebaseFirestore.instance.collection('carts').add({
+                      'id': cart.id,
+                      'product': cart.product.name,
+                      'quantity': cart.quantity,
+                      'timestamp': FieldValue.serverTimestamp(),
+                    });
+                    cartProvider.clearCart();
+                  });
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MainPage()),
+                  );
                 },
                 style: TextButton.styleFrom(
                   backgroundColor: Colors.orange,
@@ -168,11 +175,11 @@ class CartPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Continue to Checkout',
+                      'Checkout Sekarang',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white),
                     ),
                     Icon(
                       Icons.arrow_forward,
@@ -189,13 +196,9 @@ class CartPage extends StatelessWidget {
 
     return Scaffold(
       appBar: header(),
-      body: wishlistProvider.wishlist.length == 0 ? emptyCart() : content(),
-      bottomNavigationBar: wishlistProvider.wishlist.length == 0
-          ? SizedBox()
-          : customBottomNav(),
-
-      // cartProvider.carts.length == 0 ? emptyCart() : content(),
-      //
+      body: cartProvider.carts.length == 0 ? emptyCart() : content(),
+      bottomNavigationBar:
+          cartProvider.carts.length == 0 ? SizedBox() : customBottomNav(),
     );
   }
 }

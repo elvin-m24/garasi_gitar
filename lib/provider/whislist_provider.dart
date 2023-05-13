@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:garasi_gitar/models/product_model.dart';
 
-
 class WishlistProvider with ChangeNotifier {
   List<ProductModel> _wishlist = [];
 
@@ -12,6 +11,7 @@ class WishlistProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Memasukkan data ke list wishlist
   setProduct(ProductModel product) {
     if (!isWishlist(product)) {
       _wishlist.add(product);
@@ -22,6 +22,7 @@ class WishlistProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // Menampilkan Wishlist
   isWishlist(ProductModel product) {
     if (_wishlist.indexWhere((element) => element.id == product.id) == -1) {
       return false;

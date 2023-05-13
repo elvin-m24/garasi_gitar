@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:garasi_gitar/order_history.dart';
 import 'package:garasi_gitar/page/sign_in_page.dart';
 
 class AccountPage extends StatefulWidget {
@@ -124,11 +125,13 @@ class _AccountPageState extends State<AccountPage> {
                   Navigator.pushNamed(context, '/edit-profile');
                 },
                 child: menuItem(
-                  'Edit Account',
+                  'Change Password',
                 ),
               ),
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.pushNamed(context, '/order_history');
+                },
                 child: menuItem(
                   'Order',
                 ),

@@ -1,9 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:garasi_gitar/bottom_nav.dart';
-import 'package:garasi_gitar/page/home_page.dart';
-import 'package:garasi_gitar/provider/auth_provider.dart';
-import 'package:provider/provider.dart';
 
 class SignInPage extends StatefulWidget {
   @override
@@ -173,7 +170,7 @@ class _SignInPageState extends State<SignInPage> {
             );
           },
           style: TextButton.styleFrom(
-            backgroundColor: Colors.black,
+            backgroundColor: Colors.orange,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -182,6 +179,7 @@ class _SignInPageState extends State<SignInPage> {
             'Sign In',
             style: TextStyle(
               fontSize: 16,
+              color: Colors.white,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -219,7 +217,7 @@ class _SignInPageState extends State<SignInPage> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[200],
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Container(

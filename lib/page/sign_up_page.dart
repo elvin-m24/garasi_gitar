@@ -2,9 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:garasi_gitar/bottom_nav.dart';
-import 'package:garasi_gitar/page/home_page.dart';
-import 'package:garasi_gitar/provider/auth_provider.dart';
-import 'package:provider/provider.dart';
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -14,7 +11,6 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController emailController = TextEditingController();
-  TextEditingController usernameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -36,58 +32,6 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
             Text(
               'Register and Happy Shoping',
-            ),
-          ],
-        ),
-      );
-    }
-
-    Widget usernameInput() {
-      return Container(
-        margin: EdgeInsets.only(top: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Username',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            SizedBox(
-              height: 12,
-            ),
-            Container(
-              height: 50,
-              padding: EdgeInsets.symmetric(
-                horizontal: 16,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.account_circle_rounded,
-                      size: 17,
-                    ),
-                    SizedBox(
-                      width: 16,
-                    ),
-                    Expanded(
-                      child: TextFormField(
-                        controller: usernameController,
-                        decoration: InputDecoration.collapsed(
-                          hintText: 'Your Username',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ],
         ),
@@ -217,7 +161,6 @@ class _SignUpPageState extends State<SignUpPage> {
 
                 // Add user data to Firestore
                 firestore.collection("users").doc(value.user!.uid).set({
-                  "username": usernameController.text,
                   "email": emailController.text,
                   // Add additional fields as needed
                 }).then((_) {
@@ -230,7 +173,7 @@ class _SignUpPageState extends State<SignUpPage> {
             );
           },
           style: TextButton.styleFrom(
-            backgroundColor: Colors.black,
+            backgroundColor: Colors.orange,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -238,6 +181,7 @@ class _SignUpPageState extends State<SignUpPage> {
           child: Text(
             'Sign Up',
             style: TextStyle(
+              color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -260,7 +204,7 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
             GestureDetector(
               onTap: () {
-                Navigator.pop(context);
+                Navigator.pushNamed(context, '/sign-in');
               },
               child: Text(
                 'Sign In',
@@ -276,7 +220,7 @@ class _SignUpPageState extends State<SignUpPage> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[200],
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Container(
@@ -287,7 +231,6 @@ class _SignUpPageState extends State<SignUpPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               header(),
-              usernameInput(),
               emailInput(),
               passwordInput(),
               signUpButton(),
