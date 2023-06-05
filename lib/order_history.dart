@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:garasi_gitar/order_tile.dart';
 
@@ -9,6 +10,8 @@ class OrderHistory extends StatelessWidget {
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference product = firestore.collection("carts");
+    User? user = FirebaseAuth.instance.currentUser;
+    String? userId = user?.uid;
 
     PreferredSizeWidget header() {
       return AppBar(
@@ -37,7 +40,7 @@ class OrderHistory extends StatelessWidget {
           top: 14,
         ),
         child: StreamBuilder<QuerySnapshot>(
-            stream: product.snapshots(),
+            stream: product.where('user', isEqualTo: userId).snapshots(),
             builder: (context, snapshot) {
               return snapshot.hasData
                   ? Column(
@@ -48,6 +51,7 @@ class OrderHistory extends StatelessWidget {
                               id: e.id,
                               product: e.get("product"),
                               quantity: e.get("quantity"),
+                              totalprice: e.get("total"),
                               timestamp: e.get("timestamp").toDate(),
                             ),
                           )

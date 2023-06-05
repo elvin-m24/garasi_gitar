@@ -10,54 +10,79 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     CollectionReference product = firestore.collection("product");
+    CollectionReference users = firestore.collection("users");
     User? user = FirebaseAuth.instance.currentUser;
+
+    Future<String> getUsername() async {
+      String? uid = user?.uid;
+      if (uid != null) {
+        DocumentSnapshot snapshot = await users.doc(uid).get();
+        Map<String, dynamic>? userData =
+            snapshot.data() as Map<String, dynamic>?;
+        if (userData != null) {
+          return userData['username'];
+        }
+      }
+      return '';
+    }
+
     Widget header() {
-      return Container(
-        margin: EdgeInsets.all(
-          30.0,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      return FutureBuilder<String>(
+        future: getUsername(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (snapshot.hasData) {
+            String username = snapshot.data!;
+            return Container(
+              margin: EdgeInsets.all(30.0),
+              child: Row(
                 children: [
-                  Text(
-                    'Hello',
-                    style: TextStyle(
-                        fontSize: 24,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hello',
+                          style: TextStyle(
+                              fontSize: 24,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold),
+                        ),
+                        Text(
+                          username,
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                              fontWeight: FontWeight.normal),
+                        ),
+                      ],
+                    ),
                   ),
-                  Text(
-                    '${user?.email}',
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                        fontWeight: FontWeight.normal),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: EdgeInsets.all(8),
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/cart_page');
+                      },
+                      backgroundColor: Colors.black,
+                      child: Icon(
+                        Icons.shopping_cart,
+                        color: Colors.orange,
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: EdgeInsets.all(8),
-              child: FloatingActionButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/cart_page');
-                },
-                backgroundColor: Colors.black,
-                child: Icon(
-                  Icons.shopping_cart,
-                  color: Colors.orange,
-                ),
-              ),
-            ),
-          ],
-        ),
+            );
+          } else {
+            return Text('Error retrieving username');
+          }
+        },
       );
     }
 

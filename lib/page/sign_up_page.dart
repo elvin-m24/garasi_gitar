@@ -11,6 +11,8 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   TextEditingController passwordController = TextEditingController();
   TextEditingController emailController = TextEditingController();
+  TextEditingController usernameController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +34,118 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
             Text(
               'Register and Happy Shoping',
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget nameInput() {
+      return Container(
+        margin: EdgeInsets.only(top: 50),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Full Name',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(
+              height: 12,
+            ),
+            Container(
+              height: 50,
+              padding: EdgeInsets.symmetric(
+                horizontal: 16,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.person,
+                      size: 17,
+                    ),
+                    SizedBox(
+                      width: 16,
+                    ),
+                    Expanded(
+                      child: TextFormField(
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        controller: nameController,
+                        decoration: InputDecoration.collapsed(
+                          hintText: 'Your Full Name',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    Widget usernameInput() {
+      return Container(
+        margin: EdgeInsets.only(top: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Username',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            SizedBox(
+              height: 12,
+            ),
+            Container(
+              height: 50,
+              padding: EdgeInsets.symmetric(
+                horizontal: 16,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.person_pin_rounded,
+                      size: 17,
+                    ),
+                    SizedBox(
+                      width: 16,
+                    ),
+                    Expanded(
+                      child: TextFormField(
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        controller: usernameController,
+                        decoration: InputDecoration.collapsed(
+                          hintText: 'Your Username',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -75,6 +189,10 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     Expanded(
                       child: TextFormField(
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
                         controller: emailController,
                         decoration: InputDecoration.collapsed(
                           hintText: 'Your Email Address',
@@ -127,6 +245,10 @@ class _SignUpPageState extends State<SignUpPage> {
                     ),
                     Expanded(
                       child: TextFormField(
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
                         obscureText: true,
                         controller: passwordController,
                         decoration: InputDecoration.collapsed(
@@ -143,34 +265,146 @@ class _SignUpPageState extends State<SignUpPage> {
       );
     }
 
+    bool isEmailValid(String email) {
+      RegExp emailRegex =
+          RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$');
+      return emailRegex.hasMatch(email);
+    }
+
     Widget signUpButton() {
       return Container(
         height: 50,
         width: double.infinity,
         margin: EdgeInsets.only(top: 30),
         child: TextButton(
-          onPressed: () {
-            FirebaseAuth.instance
-                .createUserWithEmailAndPassword(
-                    email: emailController.text,
-                    password: passwordController.text)
-                .then(
-              (value) {
-                print("Created New Account");
-                FirebaseFirestore firestore = FirebaseFirestore.instance;
+          onPressed: () async {
+            String email = emailController.text;
+            String password = passwordController.text;
+            String username = usernameController.text;
+            String name = nameController.text;
 
-                // Add user data to Firestore
-                firestore.collection("users").doc(value.user!.uid).set({
-                  "email": emailController.text,
-                  // Add additional fields as needed
-                }).then((_) {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => MainPage()));
-                }).onError((error, stackTrace) {
-                  print("Error ${error.toString()}");
-                });
-              },
-            );
+            if (email.isEmpty ||
+                password.isEmpty ||
+                username.isEmpty ||
+                name.isEmpty) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text("Empty Fields"),
+                  content: Text("Please fill in all the fields."),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        "OK",
+                        style: TextStyle(
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+              return;
+            }
+
+            if (password.length < 6) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text("Invalid Password"),
+                  content: Text("Password must be at least 6 characters long."),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        "OK",
+                        style: TextStyle(
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+              return;
+            }
+
+            if (!isEmailValid(email)) {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text("Invalid Email"),
+                  content: Text("Please enter a valid email address."),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        "OK",
+                        style: TextStyle(
+                          color: Colors.orange,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+              return;
+            }
+
+            try {
+              UserCredential userCredential =
+                  await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                email: email,
+                password: password,
+              );
+
+              print("Created New Account");
+              FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+              String userId = userCredential.user!.uid; // Get the user's ID
+
+              // Add user data to Firestore with the user's ID
+              await firestore.collection("users").doc(userId).set({
+                "userId": userId, // Include the user's ID in the document
+                "email": email,
+                "username": username,
+                "name": name,
+                // Add additional fields as needed
+              });
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MainPage()),
+              );
+            } catch (error) {
+              if (error is FirebaseAuthException) {
+                if (error.code == 'email-already-in-use') {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text("Email Already Used"),
+                      content: Text(
+                          "The email address is already registered. Please use a different email."),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(
+                            "OK",
+                            style: TextStyle(
+                              color: Colors.orange,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  print("Error creating account: ${error.message}");
+                  // Handle other errors
+                }
+              }
+            }
           },
           style: TextButton.styleFrom(
             backgroundColor: Colors.orange,
@@ -199,7 +433,7 @@ class _SignUpPageState extends State<SignUpPage> {
             Text(
               'Already have an account? ',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 17,
               ),
             ),
             GestureDetector(
@@ -209,7 +443,7 @@ class _SignUpPageState extends State<SignUpPage> {
               child: Text(
                 'Sign In',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 17,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -231,6 +465,8 @@ class _SignUpPageState extends State<SignUpPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               header(),
+              nameInput(),
+              usernameInput(),
               emailInput(),
               passwordInput(),
               signUpButton(),

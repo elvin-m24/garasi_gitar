@@ -143,6 +143,12 @@ class _SignInPageState extends State<SignInPage> {
       );
     }
 
+    bool isValidEmail(String email) {
+      final emailRegex = RegExp(
+          r'^[\w-]+(\.[\w-]+)*@[a-zA-Z\d-]+(\.[a-zA-Z\d-]+)*\.[a-zA-Z\d-]+$');
+      return emailRegex.hasMatch(email);
+    }
+
     Widget signInButton() {
       return Container(
         height: 50,
@@ -152,8 +158,9 @@ class _SignInPageState extends State<SignInPage> {
           onPressed: () {
             FirebaseAuth.instance
                 .signInWithEmailAndPassword(
-                    email: emailController.text,
-                    password: passwordController.text)
+              email: emailController.text,
+              password: passwordController.text,
+            )
                 .then(
               (value) {
                 Navigator.push(
@@ -163,9 +170,41 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                 );
               },
-            ).onError(
-              (error, stackTrace) {
-                print("Error ${error.toString()}");
+            ).catchError(
+              (error) {
+                String errorMessage = "An error occurred. Please try again.";
+
+                if (error is FirebaseAuthException) {
+                  switch (error.code) {
+                    case 'user-not-found':
+                      errorMessage =
+                          "Invalid email address. Please check your email and try again.";
+                      break;
+                    case 'wrong-password':
+                      errorMessage =
+                          "Invalid password. Please check your password and try again.";
+                      break;
+                  }
+                }
+
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text("Sign-In Error"),
+                    content: Text(errorMessage),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          "OK",
+                          style: TextStyle(
+                            color: Colors.orange,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               },
             );
           },
@@ -196,7 +235,7 @@ class _SignInPageState extends State<SignInPage> {
             Text(
               'Don\'t have an account? ',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 17,
               ),
             ),
             GestureDetector(
@@ -206,7 +245,7 @@ class _SignInPageState extends State<SignInPage> {
               child: Text(
                 'Sign Up',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 17,
                   fontWeight: FontWeight.w500,
                 ),
               ),

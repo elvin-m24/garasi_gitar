@@ -6,6 +6,7 @@ class OrderTile extends StatelessWidget {
       {Key? key,
       required this.product,
       required this.quantity,
+      required this.totalprice,
       required this.timestamp,
       required this.id})
       : super(key: key);
@@ -13,6 +14,7 @@ class OrderTile extends StatelessWidget {
   final String product, id;
   final DateTime timestamp;
   final num quantity;
+  final num totalprice;
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +63,16 @@ class OrderTile extends StatelessWidget {
                   width: 12,
                 ),
                 Text(
+                  "Total Harga ${totalprice}",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(
+                  width: 12,
+                ),
+                Text(
                   "Waktu Pembelian \n${timestamp}",
                   style: TextStyle(
                     color: Colors.white,
@@ -72,10 +84,44 @@ class OrderTile extends StatelessWidget {
           ),
           GestureDetector(
             onTap: () async {
-              await FirebaseFirestore.instance
-                  .collection('carts')
-                  .doc(id)
-                  .delete();
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Confirm Delete'),
+                    content: Text('Are you sure you want to delete this item?'),
+                    actions: [
+                      TextButton(
+                        child: Text(
+                          "Cancel",
+                          style: TextStyle(
+                            color: Colors.orange,
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                      ),
+                      TextButton(
+                        child: Text(
+                          "Delete",
+                          style: TextStyle(
+                            color: Colors.orange,
+                          ),
+                        ),
+                        onPressed: () async {
+                          // Perform the delete operation
+                          await FirebaseFirestore.instance
+                              .collection('carts')
+                              .doc(id)
+                              .delete();
+                          Navigator.of(context).pop(); // Close the dialog
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
             },
             child: Icon(
               Icons.delete,

@@ -151,8 +151,10 @@ class CartPage extends StatelessWidget {
                   cartProvider.carts.asMap().forEach((index, cart) async {
                     await FirebaseFirestore.instance.collection('carts').add({
                       'id': cart.id,
+                      'user': cart.userid,
                       'product': cart.product.name,
                       'quantity': cart.quantity,
+                      'total': cart.totalprice,
                       'timestamp': FieldValue.serverTimestamp(),
                     });
                     cartProvider.clearCart();

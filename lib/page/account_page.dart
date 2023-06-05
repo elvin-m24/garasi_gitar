@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:garasi_gitar/order_history.dart';
 import 'package:garasi_gitar/page/sign_in_page.dart';
@@ -14,67 +16,100 @@ class _AccountPageState extends State<AccountPage> {
   @override
   Widget build(BuildContext context) {
     User? user = FirebaseAuth.instance.currentUser;
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    CollectionReference users = firestore.collection("users");
+
+    Future<String> getUsername() async {
+      String? uid = user?.uid;
+      if (uid != null) {
+        DocumentSnapshot snapshot = await users.doc(uid).get();
+        Map<String, dynamic>? userData =
+            snapshot.data() as Map<String, dynamic>?;
+        if (userData != null) {
+          return userData['username'];
+        }
+      }
+      return '';
+    }
+
     Widget header() {
-      return AppBar(
-        backgroundColor: Colors.black,
-        automaticallyImplyLeading: false,
-        elevation: 0,
-        flexibleSpace: SafeArea(
-          child: Container(
-            padding: EdgeInsets.all(30.0),
-            child: Row(
-              children: [
-                ClipOval(
-                  child: Image.asset(
-                    'assets/kucing.jpg',
-                    width: 70,
-                  ),
-                ),
-                SizedBox(
-                  width: 16,
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+      return FutureBuilder<String>(
+        future: getUsername(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (snapshot.hasData) {
+            String username = snapshot.data!;
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.black,
+              ),
+              child: SafeArea(
+                child: Container(
+                  padding: EdgeInsets.all(30.0),
+                  child: Row(
                     children: [
-                      Text(
-                        'Hello',
-                        style: TextStyle(
+                      ClipOval(
+                        child: Icon(
+                          Icons.person,
+                          size: 70,
                           color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text(
-                        '${user?.email}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
+                      SizedBox(
+                        width: 16,
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hello',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              username,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
                         ),
-                      )
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          FirebaseAuth.instance.signOut().then((value) {
+                            print("Sign Out");
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SignInPage(),
+                              ),
+                            );
+                          });
+                        },
+                        child: Icon(
+                          Icons.logout,
+                          size: 20.0,
+                          color: Colors.white,
+                        ),
+                      ),
                     ],
                   ),
                 ),
-                GestureDetector(
-                  onTap: () {
-                    FirebaseAuth.instance.signOut().then((value) {
-                      print("Sign Out");
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SignInPage()));
-                    });
-                  },
-                  child: Icon(
-                    Icons.logout,
-                    size: 20.0,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+              ),
+            );
+          } else {
+            return Container(
+              child: Text("Didn't have Username"),
+            );
+          }
+        },
       );
     }
 

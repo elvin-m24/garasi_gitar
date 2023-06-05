@@ -39,7 +39,14 @@ class _EditProfilePageState extends State<EditProfilePage> {
       print(error.toString());
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(error.toString()),
+          content: Text(
+            "Password must be at least 6 characters long.",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 17,
+            ),
+          ),
+          backgroundColor: Colors.red,
         ),
       );
     }
@@ -159,8 +166,12 @@ class _EditProfilePageState extends State<EditProfilePage> {
               ),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                image: DecorationImage(
-                    fit: BoxFit.fill, image: AssetImage("assets/kucing.jpg")),
+                color: Colors.orange,
+              ),
+              child: Icon(
+                Icons.lock,
+                size: 70,
+                color: Colors.white,
               ),
             ),
             passLama(),

@@ -18,16 +18,5 @@ class ProductModel {
     required this.image,
     this.isFavorite = false,
   });
-
-  // factory ProductModel.fromSnapshot(QueryDocumentSnapshot<Object?> snapshot) {
-  //   return ProductModel(
-  //     id: snapshot.id,
-  //     name: snapshot.get('name'),
-  //     harga: snapshot.get('harga'),
-  //     ketagori: snapshot.get('ketagori'),
-  //     deskripsi: snapshot.get('deskripsi'),
-  //     image: snapshot.get('image'),
-  //     isFavorite: snapshot.get('isFavorite') ?? false,
-  //   );
-  // }
+  
 }
