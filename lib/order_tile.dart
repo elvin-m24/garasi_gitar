@@ -63,7 +63,7 @@ class OrderTile extends StatelessWidget {
                   width: 12,
                 ),
                 Text(
-                  "Total Harga ${totalprice}",
+                  "Total Harga Rp${totalprice}",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w500,

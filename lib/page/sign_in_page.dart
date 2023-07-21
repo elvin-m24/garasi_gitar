@@ -143,12 +143,6 @@ class _SignInPageState extends State<SignInPage> {
       );
     }
 
-    bool isValidEmail(String email) {
-      final emailRegex = RegExp(
-          r'^[\w-]+(\.[\w-]+)*@[a-zA-Z\d-]+(\.[a-zA-Z\d-]+)*\.[a-zA-Z\d-]+$');
-      return emailRegex.hasMatch(email);
-    }
-
     Widget signInButton() {
       return Container(
         height: 50,
